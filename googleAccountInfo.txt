@@ -1,0 +1,4 @@
+email: dummyuseraasma@gmail.com
+passw: DummyUserAASMA2019
+data-nascimento: 29-10-1997
+primeiro e ultimo nome: dummy user
