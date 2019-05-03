@@ -2,10 +2,10 @@ package agent;
 
 public class Evento {
 	
-	String origem;
-	String destino;
-	MeioTransporte meio_transporte;
-	float duracao;
+	private String origem;
+	private String destino;
+	private MeioTransporte meio_transporte;
+	private float duracao;
 	
 	public Evento (String origem, String destino, MeioTransporte meio_transporte, float duracao) {
 		this.origem = origem;

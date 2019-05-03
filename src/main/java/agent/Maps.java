@@ -1,8 +1,6 @@
 package agent;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Scanner;
 
 public class Maps {
 	
@@ -14,11 +12,16 @@ public class Maps {
 		eventos = new ArrayList<Evento>();
 	}
 	
-	public float getTimeToEvent(String origem, String destino) {
+	public float getTimeToEvent(String origem, String destino, MeioTransporte meioTransporte) {
 		if (origem == null && destino == null) {
 			return -1;
 		}
-		return 0;
+		for (Evento evento : eventos) {
+			if (evento.getDestino().equals(destino) && evento.getOrigem().equals(origem) && evento.getMeio_transporte().equals(meioTransporte)) {
+				return evento.getDuracao();
+			}
+		}
+		return -1;
 	}
 
 }
