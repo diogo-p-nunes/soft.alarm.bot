@@ -9,9 +9,6 @@
 # Gradle output
 out/
 
-# Google account tokens
-tokens/
-
 # Log file
 *.log
 
