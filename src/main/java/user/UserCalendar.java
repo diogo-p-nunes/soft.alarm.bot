@@ -86,6 +86,7 @@ public class UserCalendar {
             throw new NoEventException();
         } else {
             Event event = items.get(0);
+            System.out.println(event.getDescription());
             return event.getLocation();
         }
     }
