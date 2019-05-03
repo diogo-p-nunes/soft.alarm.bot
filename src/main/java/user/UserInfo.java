@@ -32,6 +32,10 @@ public class UserInfo {
     public String getUserLocation() {
         return this.location;
     }
+    
+    public String getTimeToDress() {
+    	return "00:20";
+    }
 
     private DateTime stringToDateTime(String dateString) {
         return new DateTime(dateString);
