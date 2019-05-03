@@ -13,7 +13,7 @@ public class UserInfo {
 
     public UserInfo() throws IOException, GeneralSecurityException {
         this.calendar = new UserCalendar();
-        this.location = "Some random location";
+        this.location = "Rua José Ferrão Castelo Branco, Paço de Arcos";;
         this.feedback = new Feedback();
     }
 
@@ -23,6 +23,10 @@ public class UserInfo {
 
     public String getFirstEventLocation(String dateString) throws NoEventException, IOException {
         return this.calendar.getFirstEventLocation(stringToDateTime(dateString));
+    }
+
+    public String getFirstEventTransportation(String dateString) throws NoEventException, IOException {
+        return this.calendar.getFirstEventTransportation(stringToDateTime(dateString));
     }
 
     public String getUserLocation() {

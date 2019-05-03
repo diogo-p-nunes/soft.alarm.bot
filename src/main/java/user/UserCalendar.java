@@ -86,8 +86,17 @@ public class UserCalendar {
             throw new NoEventException();
         } else {
             Event event = items.get(0);
-            System.out.println(event.getDescription());
             return event.getLocation();
+        }
+    }
+
+    public String getFirstEventTransportation(DateTime date) throws NoEventException, IOException {
+        List<Event> items = getEvents(date,1);
+        if (items.isEmpty()) {
+            throw new NoEventException();
+        } else {
+            Event event = items.get(0);
+            return event.getDescription();
         }
     }
 

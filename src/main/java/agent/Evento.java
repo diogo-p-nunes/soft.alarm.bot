@@ -1,17 +1,19 @@
 package agent;
 
+import com.google.maps.model.DistanceMatrix;
+
 public class Evento {
 	
 	private String origem;
 	private String destino;
-	private MeioTransporte meio_transporte;
-	private float duracao;
+	private String meio_transporte;
+	private DistanceMatrix dm;
 	
-	public Evento (String origem, String destino, MeioTransporte meio_transporte, float duracao) {
+	public Evento (String origem, String destino, String meio_transporte, DistanceMatrix dm) {
 		this.origem = origem;
 		this.destino = destino;
 		this.meio_transporte = meio_transporte;
-		this.duracao = duracao;
+		this.dm = dm;
 	}
 
 	public String getOrigem() {
@@ -30,20 +32,19 @@ public class Evento {
 		this.destino = destino;
 	}
 
-	public MeioTransporte getMeio_transporte() {
+	public String getMeio_transporte() {
 		return meio_transporte;
 	}
 
-	public void setMeio_transporte(MeioTransporte meio_transporte) {
+	public void setMeio_transporte(String meio_transporte) {
 		this.meio_transporte = meio_transporte;
 	}
 
-	public float getDuracao() {
-		return duracao;
+	public DistanceMatrix getDm() {
+		return dm;
 	}
 
-	public void setDuracao(float duracao) {
-		this.duracao = duracao;
+	public void setDm(DistanceMatrix dm) {
+		this.dm = dm;
 	}
-	
 }
