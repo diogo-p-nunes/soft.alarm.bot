@@ -1,8 +1,10 @@
-package agent;
+package user;
 
 import com.google.maps.model.DistanceMatrix;
 
-public class Evento {
+import java.io.Serializable;
+
+public class Evento implements Serializable {
 	
 	private String origem;
 	private String destino;

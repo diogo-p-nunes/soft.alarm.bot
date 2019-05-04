@@ -7,19 +7,48 @@ import com.google.maps.GeoApiContext;
 import com.google.maps.model.DistanceMatrix;
 import com.google.maps.model.TravelMode;
 import exception.GetTimeToEventException;
+import user.Evento;
 
+import java.io.*;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Maps {
-	
-	ArrayList<Evento> eventosPassados = new ArrayList<>();
+
+	private String STORAGE_FILE = "pastEventsStorage.se";
+	private List<Evento> eventosPassados;
 	private static final String API_KEY = "AIzaSyDcOZV_h67RGwOFz3CN9hLIcdnYUgWc3EI";
 	private static final GeoApiContext context = new GeoApiContext.Builder()
 			.apiKey(API_KEY)
 			.build();
 	
-	public Maps () {}
-	
+	public Maps () throws IOException, ClassNotFoundException {
+		// Load past events from storage (if any)
+		eventosPassados = loadPastEvents();
+	}
+
+	private ArrayList<Evento> loadPastEvents() throws IOException, ClassNotFoundException {
+		System.out.println("[INFO] : Loading past events from storage ...");
+		String filename = Paths.get(".").toAbsolutePath().normalize().toString() + "/" + STORAGE_FILE;
+		FileInputStream streamIn = new FileInputStream(filename);
+		try {
+			ObjectInputStream objectinputstream = new ObjectInputStream(streamIn);
+			return (ArrayList<Evento>) objectinputstream.readObject();
+		}
+		catch(EOFException e) {
+			return new ArrayList<>();
+		}
+	}
+
+	public void storePastEvents() throws IOException {
+		System.out.println("[INFO] : Storing past events ...");
+		String filename = Paths.get(".").toAbsolutePath().normalize().toString() + "/" + STORAGE_FILE;
+		FileOutputStream fout = new FileOutputStream(filename);
+		ObjectOutputStream oos = new ObjectOutputStream(fout);
+		oos.writeObject(eventosPassados);
+	}
+
 	public DistanceMatrix getTimeToEvent(String origem, String destino, String meioTransporte)
 			throws GetTimeToEventException {
 		if (origem == null && destino == null) {

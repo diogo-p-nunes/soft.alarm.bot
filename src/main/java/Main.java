@@ -7,13 +7,12 @@ public class Main {
 
     public static void main(String[] args) {
 
-        // try and build the user module
-        //UserInfo user;
         try {
-            //user = new UserInfo();
-            //Maps maps = new Maps();
             Agent agent = new Agent();
-            System.out.println("Alarm set for: " + agent.setAlarm());
+            String date = "2019-05-02T00:00:00Z";
+            System.out.println("Alarm set for: " + agent.setAlarm(date));
+            agent.storePastEvents();
+
             /*
             System.out.println(user.getFirstEventStart("2019-05-02T00:00:00Z"));
     		System.out.println(user.getFirstEventLocation("2019-05-02T00:00:00Z"));
@@ -30,6 +29,7 @@ public class Main {
                 
             }
             */
+
         }
         catch (Exception e) {
             e.printStackTrace();
