@@ -4,8 +4,7 @@ import com.google.api.client.util.DateTime;
 import com.google.maps.DistanceMatrixApi;
 import com.google.maps.DistanceMatrixApiRequest;
 import com.google.maps.GeoApiContext;
-import com.google.maps.model.DistanceMatrix;
-import com.google.maps.model.TravelMode;
+import com.google.maps.model.*;
 import exception.GetTimeToEventException;
 import user.Evento;
 
@@ -29,7 +28,7 @@ public class Maps {
 	}
 
 	private ArrayList<Evento> loadPastEvents() throws IOException, ClassNotFoundException {
-		System.out.println("[INFO] : Loading past events from storage ...");
+		System.out.println("[INFO] Loading past events from storage ...");
 		String filename = Paths.get(".").toAbsolutePath().normalize().toString() + "/" + STORAGE_FILE;
 		FileInputStream streamIn = new FileInputStream(filename);
 		try {
@@ -42,7 +41,7 @@ public class Maps {
 	}
 
 	public void storePastEvents() throws IOException {
-		System.out.println("[INFO] : Storing past events ...");
+		System.out.println("[INFO] Storing past events ...");
 		String filename = Paths.get(".").toAbsolutePath().normalize().toString() + "/" + STORAGE_FILE;
 		FileOutputStream fout = new FileOutputStream(filename);
 		ObjectOutputStream oos = new ObjectOutputStream(fout);
@@ -59,7 +58,7 @@ public class Maps {
 		for (Evento evento : this.eventosPassados) {
 			if (evento.getDestino().equals(destino) && evento.getOrigem().equals(origem) &&
 				evento.getMeio_transporte().equals(meioTransporte)) {
-				System.out.println("[INFO] : Getting duration from past events.");
+				System.out.println("[INFO] Getting duration from past events.");
 				return evento.getDm();
 			}
 		}
@@ -87,7 +86,7 @@ public class Maps {
 					.language("en-EN")
 					.await();
 
-			System.out.println("[INFO] : Getting duration from Google Maps.");
+			System.out.println("[INFO] Getting duration from Google Maps.");
 			saveNewEvent(origem, destino, meioTransporte, matrix);
 			return matrix;
 
@@ -98,17 +97,27 @@ public class Maps {
 	}
 
 
-	public void printDistanceMatrix(DistanceMatrix dm) {
-		System.out.println("[DM] :");
+	public void printDistanceMatrix(DistanceMatrix dm, String meioTransporte) {
+		System.out.println("[DM] ");
 		System.out.println("\tOrigem: " + dm.originAddresses[0]);
 		System.out.println("\tDestino: " + dm.destinationAddresses[0]);
-		System.out.println("\tValue: " + dm.rows[0].elements[0].toString());
+		System.out.println("\tMeio transporte: " + meioTransporte);
+		System.out.println("\tValues:");
+		for(DistanceMatrixRow row : dm.rows) {
+			for(DistanceMatrixElement el : row.elements) {
+				System.out.println("\t\t" + el.toString());
+			}
+		}
 	}
 
 
 	private void saveNewEvent(String origem, String destino, String meioTransporte, DistanceMatrix dm) {
 		this.eventosPassados.add(new Evento(origem, destino, meioTransporte, dm));
-		System.out.println("[INFO] : New event stored.");
+		System.out.println("[INFO] New event stored.");
+	}
+
+	public Duration getDuration(DistanceMatrix dm) {
+		return dm.rows[0].elements[0].duration;
 	}
 
 }

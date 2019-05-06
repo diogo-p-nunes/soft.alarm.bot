@@ -2,9 +2,7 @@ package agent;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-
 import com.google.maps.model.DistanceMatrix;
-
 import exception.GetTimeToEventException;
 import exception.NoEventException;
 import user.UserInfo;
@@ -19,7 +17,7 @@ public class Agent {
 		maps = new Maps();
 	}
 	
-	public String setAlarm(String date) throws NoEventException, IOException, GetTimeToEventException {
+	public void setAlarm(String date) throws NoEventException, IOException, GetTimeToEventException {
 
 		// Set date's first event data
 		String origem = user.getUserLocation();
@@ -28,24 +26,39 @@ public class Agent {
 
         // Get duration of travel to event
 		DistanceMatrix matrix = maps.getTimeToEvent(origem, destino, meioTransporte);
+		maps.printDistanceMatrix(matrix, meioTransporte);
 
-		maps.printDistanceMatrix(matrix);
+		// {hours, minutes, seconds}
+		int[] duration = TimeConverter.secondsToHMS(maps.getDuration(matrix).inSeconds);
+		int[] start = TimeConverter.dateTimeToHMS(user.getFirstEventStart(date));
+		int[] ready = TimeConverter.stringToHMS(user.getTimeToDress());
+		int[] alarm = {0,0,0};
 
-		// TODO: java.lang.ArrayIndexOutOfBoundsException: 2 at agent.Agent.setAlarm(Agent.java:42) at Main.main(Main.java:13)
-		/*
-		//ha uma cena para o transito
-		String duracao = matrix.rows[0].elements[0].duration.toString();
-		String[] array = duracao.split(" ");
-		String line = user.getFirstEventStart(date);
-		String[] str = user.getTimeToDress().split(":");
-		
-		int minutos = Integer.parseInt(line.substring(11, 13)) - Integer.parseInt(array[0]) - Integer.parseInt(str[0]);
-		minutos *= 60;
-		minutos = minutos + Integer.parseInt(line.substring(14, 16)) - Integer.parseInt(array[2]) - Integer.parseInt(str[1]);
-		
-		return (minutos / 60) + ":" + (minutos % 60);
-		*/
-		return "ALARM";
+		// set alarm seconds
+		alarm[2] = start[2] - duration[2] - ready[2];
+		if(alarm[2] < 0) {
+			// reduce the number of seconds from the next minute
+			alarm[2] = 60 + alarm[2];
+			// increase by one the number of minutes of duration
+			duration[1] += 1;
+		}
+
+		// set alarm minutes
+		alarm[1] = start[1] - duration[1] - ready[1];
+		if(alarm[1] < 0) {
+			// reduce the number of minutes from the next hour
+			alarm[1] = 60 + alarm[1];
+			// increase by one the number of hours of duration
+			duration[0] += 1;
+		}
+
+		// set alarm hours
+		alarm[0] = start[0] - duration[0] - ready[0];
+		if(alarm[0] < 0) {
+			alarm[0] = 24 + alarm[0];
+		}
+
+		TimeConverter.printHMS("[ALARM]", alarm);
 	}
 
 	public void storePastEvents() throws IOException {

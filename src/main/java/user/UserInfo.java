@@ -34,7 +34,7 @@ public class UserInfo {
     }
     
     public String getTimeToDress() {
-    	return "00:20";
+    	return "00:20:00";
     }
 
     private DateTime stringToDateTime(String dateString) {
