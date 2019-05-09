@@ -71,7 +71,7 @@ public class UserCalendar {
     }
 
     public String getFirstEventStart(DateTime date) throws NoEventException, IOException {
-        List<Event> items = getEvents(date,10);
+        List<Event> items = getEvents(date,1);
         if (items.isEmpty()) {
             throw new NoEventException();
         } else {
@@ -104,9 +104,15 @@ public class UserCalendar {
         Events events = this.service.events().list("primary")
                 .setMaxResults(max)
                 .setTimeMin(date)
+                .setTimeMax(nextDay(date))
                 .setOrderBy("startTime")
                 .setSingleEvents(true)
                 .execute();
        return events.getItems();
+    }
+
+    private DateTime nextDay(DateTime date) {
+        String[] values = date.toString().split("T");
+        return new DateTime(values[0]+"T23:59:59.9");
     }
 }

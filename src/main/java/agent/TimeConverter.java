@@ -29,10 +29,20 @@ public class TimeConverter {
     }
 
     public static void printHMS(String type, int[] hms) {
-        System.out.print("\t" + type + " ");
-        for(int i : hms) {
-            System.out.print(i + ":");
-        }
-        System.out.println();
+        System.out.println("\t" + type + " " + HMStoString(hms));
+    }
+
+    public static String HMStoString(int[] hms) {
+        String r = "";
+        if(hms[0] < 10) r += "0"+hms[0]+":";
+        else r += hms[0]+":";
+
+        if(hms[1] < 10) r += "0"+hms[1]+":";
+        else r += hms[1]+":";
+
+        if(hms[2] < 10) r += "0"+hms[2];
+        else r += hms[2];
+
+        return r;
     }
 }
