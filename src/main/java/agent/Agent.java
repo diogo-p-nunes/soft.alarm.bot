@@ -2,11 +2,12 @@ package agent;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
+import agent.qlearning.Row;
+import agent.qlearning.State;
 import com.google.maps.model.DistanceMatrix;
 
 import exception.GetTimeToEventException;
@@ -18,230 +19,26 @@ public class Agent {
 	
 	private UserInfo user;
 	private Maps maps;
-	
-	private enum Action {increase_time, decrease_time, maintaine_time};
-	private List<Action> actions;
-	private double[][] q;
-	
-	private enum ActionSelection {eGreedy, softMax};
-	private enum LearningApproach {QLearning, SARSA};
-	
-	private ActionSelection actionSelection = ActionSelection.eGreedy;
-	private LearningApproach learningApproach = LearningApproach.QLearning;
-	
-	int it = 0, total = 10000;
-	double discount = 0.9, learningRate = 0.8;
-	double epsilon = 0.7, randfactor = 0.05, dec;
-	private Random random;
-	
-	public Evento evento;
-	public int[] time_to_get_ready;
+	private HashMap<State, Row> q_table;
+	private State curr_state, new_state;
+	private int action;
+	private double learningRate = 0.8;
+	private double gamma = 1;
 
-	public Agent(String date) throws IOException, GeneralSecurityException, ClassNotFoundException, NoEventException, GetTimeToEventException {
+	private double EXPLORATION = 0;
+
+	public Agent() throws IOException, GeneralSecurityException, ClassNotFoundException, NoEventException, GetTimeToEventException {
 		user = new UserInfo();
 		maps = new Maps();
-		
-		String origem = user.getUserLocation();
-		String destino = user.getFirstEventLocation(date);
-		String meioTransporte = user.getFirstEventTransportation(date);
-
-		// Get duration of travel to event
-		DistanceMatrix matrix = maps.getTimeToEvent(origem, destino, meioTransporte);
-		this.evento = new Evento(origem, destino, meioTransporte, matrix);
-		this.time_to_get_ready = TimeConverter.stringToHMS(user.getTimeToDress());
-		
-		initQFunction();
-	}
-	
-	public void agentDecision() {
-		State originalState = getState(evento, time_to_get_ready);
-		Action originalAction = selectAction();
-		execute(originalAction);
-
-		//proactiveDecision(); /* DBI */
-		//reactiveDecision();
-		learningDecision(originalState,originalAction); /* RL */
-	}		
-
-	/************************
-	 **** A: Q-learning ***** 
-	 ************************/
-	
-	/* Accesses the state of an agent given its position, direction and cargo */
-	public State getState(Evento evento, int[] time_to_get_ready) {
-		return new State(evento, time_to_get_ready);
-	}
-	
-	/* Creates the initial Q-value function structure: (x y action) <- 0 */
-	public void initQFunction(){
-		actions = Arrays.asList(Action.values());
-		q = new double[Board.nX*Board.nY*directions*(Board.colors.length+1)][actions.size()];
-		dec = (epsilon-0.1)/total;
-	}
-		
-	/* Learns policy up to a certain step and then uses policy to behave */
-	public void learningDecision(State originalState, Action originalAction) {
-		it++;
-		double u = reward(originalState,originalAction);
-		double prevq = getQ(originalState,originalAction);
-		double predError = 0;
-		
-		epsilon = Math.max(epsilon-dec,0.05);
-		
-		switch(learningApproach) {
-			case SARSA : 
-				Action newAction = selectAction();
-				predError = u + discount*getQ(getState(evento, time_to_get_ready), newAction) - prevq; break;
-			case QLearning : predError = u + discount*getMaxQ(getState(evento, time_to_get_ready)) - prevq; break;
-		}
-		setQ(originalState, originalAction, prevq+(learningRate * predError));
-		//if(it%1000==0) System.out.println("e="+epsilon+"\n"+qToString());
-	}
-	
-	/* Executes action according to the learned policy */
-	public void executeQ() {
-		if(random.nextDouble()<randfactor) execute(randomAction());
-		else execute(getMaxActionQ(getState(evento, time_to_get_ready),availableActions()));
-	}
-	
-	/* Selects action according to e-greedy or soft-max strategies */
-	public Action selectAction() {
-		epsilon -= dec;
-		if(random.nextDouble()<randfactor) return randomAction(); 
-		switch(actionSelection) {
-			case eGreedy : return eGreedySelection();
-			default : return softMax();
-		}
+		q_table = new HashMap<>();
 	}
 
-	/* Select a random action */
-	private Action randomAction() {
-		List<Integer> validActions = availableActions(); //index of available actions
-		return actions.get(validActions.get(random.nextInt(validActions.size())));
-	}
 
-	/* SoftMax action selection */
-	private Action softMax() {
-		List<Integer> validActions = availableActions(); //index of available actions
-		double[] cumulative = new double[validActions.size()];
-		cumulative[0]=Math.exp(getQ(getState(evento, time_to_get_ready),actions.get(0))/(epsilon*100.0));
-		for(int i=1; i<validActions.size(); i++) 
-			cumulative[i]=Math.exp(getQ(getState(evento, time_to_get_ready),actions.get(i))/(epsilon*100.0))+cumulative[i-1];
-		double total = cumulative[validActions.size()-1];
-		double cut = random.nextDouble()*total;
-		for(int i=0; i<validActions.size(); i++) 
-			if(cut<=cumulative[i]) return actions.get(validActions.get(i));
-		return null;
-	}
-
-	/* eGreedy action selection */
-	private Action eGreedySelection() {
-		List<Integer> validActions = availableActions(); //index of available actions
-		if(random.nextDouble()>epsilon) 
-			return actions.get(validActions.get(random.nextInt(validActions.size())));
-		else return getMaxActionQ(getState(evento, time_to_get_ready),validActions);
-	}
-
-	/* Retrieves reward from action */
-	private int reward(State state, Action action) {
-		switch(action) {
-			case increase_time : return 100;
-			case decrease_time : return 100;
-			case maintaine_time : return 100;
-			default : return 0;
-		}
-	}
-
-	/* Gets the index of maximum Q-value action for a state */
-	private Action getMaxActionQ(State state, List<Integer> actionsIndexes) {
-		double max = Double.NEGATIVE_INFINITY;
-		int maxIndex = -1;
-		for(int i : actionsIndexes) {
-			double v = q[state][i];
-			if(v>max) {
-				max = v;
-				maxIndex = i;
-			}
-		}
-		return actions.get(maxIndex);
-	}
-	
-	/* Get action with higher likelihood for a given state from q */
-	private Action getMaxActionQ(int state) {
-		double max = Double.NEGATIVE_INFINITY;
-		int maxIndex = -1;
-		for(int i=0; i<actions.size(); i++) {
-			if(q[state][i]>max) {
-				max = q[state][i];
-				maxIndex = i;
-			}
-		}
-		return actions.get(maxIndex);
-	}
-
-	/* Gets the maximum Q-value action for a state (x y) */
-	private double getMaxQ(int state) {
-		double max = Double.NEGATIVE_INFINITY;
-		for(double v : q[state]) max = Math.max(v, max);
-		return max;
-	}
-
-	/* Gets the maximum Q-value action for a state (x y) */
-	private boolean singleMaxQ(int state) {
-		int count = 0;
-		double max = getMaxQ(state);
-		for(double v : q[state]) if(v==max) count++;
-		return count<=1;
-	}
-
-	/* Gets the Q-value for a specific state-action pair (x y action) */
-	private double getQ(State state, Action action) {
-		return q[state][actions.indexOf(action)];
-	}
-
-	/* Sets the Q-value for a specific state-action pair (x y action) */
-	private void setQ(State state, Action action, double val) {
-		q[state][actions.indexOf(action)] = val;
-	}
-
-	/* Returns the index of eligible actions */
-	private List<Integer> availableActions() {
-		List<Integer> res = new ArrayList<Integer>();
-		return res;
-	}
-
-	
-	/* Print state-action q-policy */
-	/*
-	public String qToString() {
-		String res = "";
-		for(int j=0; j<Board.nY; j++, res+="\n") { 
-			for(int i=0; i<Board.nX; i++, res+=",") {
-				for(int k=0, s=Board.colors.length; k<s; k++) {	
-					for(int l=0; l<4; l++) {	
-						int state = k*(directions*Board.nX*Board.nY)+l*(Board.nX*Board.nY)+i*Board.nY+j;
-						if(singleMaxQ(state)) {
-							switch(getMaxActionQ(state)) {
-								case moveAhead : res+="-"; break;
-								case grab : res+="g"; break;
-								case drop : res+="d"; break;
-								case rotateLeft : res+="<"; break;
-								case rotateRight : res+=">"; break;
-							}
-						} else res+="o";
-					}
-					if(k<s-1) res+="|";
-				}
-			}
-		}
-		return res;
-	}
-	*/
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	public String setAlarm(String date) throws IOException {
+	public String processData(String date) throws IOException {
 
-		int[] alarm = {0,0,0};
+		int[] alarm;
 
 		try {
 			// Set date's first event data
@@ -258,32 +55,16 @@ public class Agent {
 			int[] start = TimeConverter.dateTimeToHMS(user.getFirstEventStart(date));
 			int[] ready = TimeConverter.stringToHMS(user.getTimeToDress());
 
+			Evento evento = new Evento(origem,destino, meioTransporte, matrix);
+			ready = check_existing_ready(ready, evento);
 
-			// set alarm seconds
-			int[] timeDependency = subtractTime(start[2], duration[2], 60);
-			alarm[2] = timeDependency[0];
-			duration[1] += timeDependency[1];
+			curr_state = new State(evento,ready);
 
-			timeDependency = subtractTime(alarm[2], ready[2], 60);
-			alarm[2] = timeDependency[0];
-			ready[1] += timeDependency[1];
+			Random r = new Random(42);
+			new_state = executeAction(curr_state,r.nextDouble());
 
-			// set alarm minutes
-			timeDependency = subtractTime(start[1], duration[1], 60);
-			alarm[1] = timeDependency[0];
-			duration[0] += timeDependency[1];
-
-			timeDependency = subtractTime(alarm[1], ready[1], 60);
-			alarm[1] = timeDependency[0];
-			ready[0] += timeDependency[1];
-
-			// set alarm hours
-			timeDependency = subtractTime(start[0], duration[0], 24);
-			alarm[0] = timeDependency[0];
-
-			timeDependency = subtractTime(alarm[0], ready[0], 24);
-			alarm[0] = timeDependency[0];
-
+			//int[] aux = new_state.getTime_to_get_ready().clone();
+			alarm = setAlarm(start, duration, new_state.getTime_to_get_ready().clone());
 		}
 		catch (NoEventException | GetTimeToEventException e) {
 			// there is no event on that day, so set the alarm to the maximum wake up time
@@ -294,16 +75,133 @@ public class Agent {
 		return TimeConverter.HMStoString(alarm);
 	}
 
+	public void processReward (int reward) {
+		if (curr_state == null && new_state == null) {
+			return;
+		}
+		Row row = getRow(curr_state,0);
+		Row row_next = getRow(new_state, row.getFreshness()+1);
+		double melhor;
+		if (action == 1) {
+			melhor = max_action(row_next, row.getReduce_dress());
+			row.setReduce_dress(row.getReduce_dress() + learningRate * (reward + gamma * melhor));
+		}
+		else if (action == 2) {
+			melhor = max_action(row_next, row.getKeep_dress());
+			row.setKeep_dress(row.getKeep_dress() + learningRate * (reward + gamma * melhor));
+		}
+		else if (action == 3) {
+			melhor = max_action(row_next, row.getIncrease_dress());
+			row.setIncrease_dress(row.getIncrease_dress() + learningRate * (reward + gamma * melhor));
+		}
+
+	}
+
+	private double max_action(Row row_next, double d) {
+		double[] array = new double[3];
+		array[0] = row_next.getReduce_dress() - d;
+		array[1] = row_next.getKeep_dress() - d;
+		array[2] = row_next.getIncrease_dress() - d;
+
+		double best = array[0];
+		for (int i = 1; i < array.length; i++) {
+			if (array[i] > best){
+				best = array[i];
+			}
+		}
+		return best;
+	}
+
+	private int[] check_existing_ready(int[] ready, Evento evento) {
+		int freshness = 0;
+		State maxFreshness = null;
+		for (Row r: q_table.values()) {
+			if (r.getState().getEvento().equals(evento) && r.getFreshness() > freshness) {
+				freshness = r.getFreshness();
+				maxFreshness = r.getState();
+			}
+		}
+		if (maxFreshness == null) {
+			return ready;
+		}
+		return maxFreshness.getTime_to_get_ready();
+	}
+
+	private Row getRow (State state, int freshness) {
+		Row row = null;
+		for (State s : q_table.keySet()) {
+			if(s.equals(state)) {
+				row = q_table.get(s);
+			}
+		}
+		if (row == null) {
+			row = new Row(state, freshness);
+			q_table.put(state,row);
+		}
+		return row;
+	}
+
+	private State executeAction(State curr_state, double random) {
+		Row row = getRow(curr_state,0);
+
+		State new_state;
+		if (random < EXPLORATION) {
+			new_state = row.executeRandomAction();
+		}
+		else {
+			new_state = row.executeMaxAction();
+		}
+		action = row.getExecuted_action();
+		return new_state;
+	}
+
+	private int[] setAlarm (int[] start, int[] duration, int[] ready) {
+		int[] alarm = {0,0,0};
+
+		TimeConverter.printHMS("[DRESS]", ready);
+
+		// set alarm seconds
+		int[] timeDependency = subtractTime(start[2], duration[2], 60);
+		alarm[2] = timeDependency[0];
+		duration[1] += timeDependency[1];
+
+		timeDependency = subtractTime(alarm[2], ready[2], 60);
+		alarm[2] = timeDependency[0];
+		ready[1] += timeDependency[1];
+
+		// set alarm minutes
+		timeDependency = subtractTime(start[1], duration[1], 60);
+		alarm[1] = timeDependency[0];
+		duration[0] += timeDependency[1];
+
+		timeDependency = subtractTime(alarm[1], ready[1], 60);
+		alarm[1] = timeDependency[0];
+		ready[0] += timeDependency[1];
+
+		// set alarm hours
+		timeDependency = subtractTime(start[0], duration[0], 24);
+		alarm[0] = timeDependency[0];
+
+		timeDependency = subtractTime(alarm[0], ready[0], 24);
+		alarm[0] = timeDependency[0];
+
+		return alarm;
+	}
+
 	public void storePastEvents() throws IOException {
 		maps.storePastEvents();
 	}
 
 
-	private int[] subtractTime(int from, int amount, int max) {
+	public static int[] subtractTime(int from, int amount, int max) {
 		int dependency = 0;
 		from = from - amount;
 		if (from < 0) {
 			from = max + from;
+			dependency++;
+		}
+		else if (from >= max) {
+			from = from - max;
 			dependency++;
 		}
 		int[] res = {from, dependency};

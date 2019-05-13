@@ -37,4 +37,14 @@ public class Evento implements Serializable {
 		return dm;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null) {
+			return false;
+		}
+		else {
+			Evento e = (Evento) obj;
+			return e.origem.equals(this.origem) && e.destino.equals(this.destino) && e.meio_transporte.equals(this.meio_transporte);
+		}
+	}
 }

@@ -1,4 +1,4 @@
-package agent;
+package agent.qlearning;
 
 import user.Evento;
 
@@ -28,4 +28,17 @@ public class State {
 		this.evento = evento;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null) {
+			return false;
+		}
+		else {
+			State s = (State) obj;
+			return s.getTime_to_get_ready()[0] == this.getTime_to_get_ready()[0] &&
+					s.getTime_to_get_ready()[1] == this.getTime_to_get_ready()[1] &&
+					s.getTime_to_get_ready()[2] == this.getTime_to_get_ready()[2] &&
+					s.getEvento().equals(this.evento);
+		}
+	}
 }

@@ -6,7 +6,6 @@ public class TimeConverter {
         int mins = Integer.parseInt(timeToDress.substring(3,5));
         int seconds = Integer.parseInt(timeToDress.substring(6,8));
         int[] res = {hours, mins, seconds};
-        printHMS("[DRESS]", res);
         return res;
     }
 
