@@ -24,8 +24,7 @@ public class Agent {
 	private int action;
 	private double learningRate = 0.8;
 	private double gamma = 1;
-
-	private double EXPLORATION = 0;
+	private double EXPLORATION = 0.5;
 
 	public Agent() throws IOException, GeneralSecurityException, ClassNotFoundException, NoEventException, GetTimeToEventException {
 		user = new UserInfo();
@@ -33,9 +32,6 @@ public class Agent {
 		q_table = new HashMap<>();
 	}
 
-
-	///////////////////////////////////////////////////////////////////////////////////////////////////
-	
 	public String processData(String date) throws IOException {
 
 		int[] alarm;
