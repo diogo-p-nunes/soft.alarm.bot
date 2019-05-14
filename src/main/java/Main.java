@@ -15,7 +15,7 @@ public class Main {
             int day;
             Agent agent = new Agent();
 
-            for(day=6; day<30; day++) {
+            for(day=14; day<30; day++) {
                 String dayStr = day < 10 ? "0" + day : "" + day;
                 String date = "2019-05-" + dayStr + "T00:00:00Z";
                 String alarm = agent.processData(date);

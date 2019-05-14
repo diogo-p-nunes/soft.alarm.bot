@@ -24,7 +24,7 @@ public class Agent {
 	private int action;
 	private double learningRate = 0.8;
 	private double gamma = 1;
-	private double EXPLORATION = 0.5;
+	private double EXPLORATION = 0.4;
 
 	public Agent() throws IOException, GeneralSecurityException, ClassNotFoundException, NoEventException, GetTimeToEventException {
 		user = new UserInfo();
@@ -56,7 +56,7 @@ public class Agent {
 
 			curr_state = new State(evento,ready);
 
-			Random r = new Random(42);
+			Random r = new Random();
 			new_state = executeAction(curr_state,r.nextDouble());
 
 			//int[] aux = new_state.getTime_to_get_ready().clone();
@@ -91,6 +91,7 @@ public class Agent {
 			row.setIncrease_dress(row.getIncrease_dress() + learningRate * (reward + gamma * melhor));
 		}
 
+		EXPLORATION *= 0.9;
 	}
 
 	private double max_action(Row row_next, double d) {
@@ -140,8 +141,10 @@ public class Agent {
 	private State executeAction(State curr_state, double random) {
 		Row row = getRow(curr_state,0);
 
+		System.out.println(EXPLORATION);
 		State new_state;
 		if (random < EXPLORATION) {
+			System.out.println("------------> Tine to explore!!!!!!!!!");
 			new_state = row.executeRandomAction();
 		}
 		else {
