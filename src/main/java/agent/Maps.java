@@ -1,12 +1,10 @@
 package agent;
 
-import com.google.api.client.util.DateTime;
 import com.google.maps.DistanceMatrixApi;
 import com.google.maps.DistanceMatrixApiRequest;
 import com.google.maps.GeoApiContext;
 import com.google.maps.model.*;
 import exception.GetTimeToEventException;
-import user.Evento;
 
 import java.io.*;
 import java.nio.file.Paths;

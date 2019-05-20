@@ -15,14 +15,14 @@ public class Main {
             int day;
             Agent agent = new Agent();
 
-            for(day=14; day<30; day++) {
+            for(day=20; day<30; day++) {
                 String dayStr = day < 10 ? "0" + day : "" + day;
                 String date = "2019-05-" + dayStr + "T00:00:00Z";
                 String alarm = agent.processData(date);
                 System.out.println("\n[ALARM] 2019-05-" + dayStr + " : " + alarm + "\n");
                 int reward = 0;
                 while (true) {
-                    System.out.println("\n[FEEDBACK] Did you arrive on time? 1 (very bad) - 5 (very good)");
+                    System.out.println("\n[FEEDBACK] Did you arrive at time ? 1 (very bad) - 5 (very good)");
                     reward = sc.nextInt();
                     if (!(reward < 1 || reward > 5)) {
                         break;

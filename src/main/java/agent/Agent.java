@@ -3,7 +3,6 @@ package agent;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Random;
 
 import agent.qlearning.Row;
@@ -12,7 +11,6 @@ import com.google.maps.model.DistanceMatrix;
 
 import exception.GetTimeToEventException;
 import exception.NoEventException;
-import user.Evento;
 import user.UserInfo;
 
 public class Agent {
@@ -23,8 +21,8 @@ public class Agent {
 	private State curr_state, new_state;
 	private int action;
 	private double learningRate = 0.8;
-	private double gamma = 1;
-	private double EXPLORATION = 0.4;
+	private double gamma = 0.4;
+	private double EXPLORATION = 0.3;
 
 	public Agent() throws IOException, GeneralSecurityException, ClassNotFoundException, NoEventException, GetTimeToEventException {
 		user = new UserInfo();

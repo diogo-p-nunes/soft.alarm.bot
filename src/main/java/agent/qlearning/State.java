@@ -1,6 +1,6 @@
 package agent.qlearning;
 
-import user.Evento;
+import agent.Evento;
 
 public class State {
 	
