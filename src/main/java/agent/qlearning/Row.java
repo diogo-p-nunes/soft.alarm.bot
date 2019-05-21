@@ -132,4 +132,12 @@ public class Row {
         }
         return this.state;
     }
+
+    @Override
+    public String toString() {
+        String state = getState().toString();
+        String action_utilities = reduce_dress + "\t " + keep_dress + "\t " + increase_dress;
+        return state + "\t " + action_utilities + "\t " + getFreshness();
+    }
 }
+

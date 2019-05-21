@@ -100,7 +100,7 @@ public class Maps {
 		System.out.println("\tOrigem: " + dm.originAddresses[0]);
 		System.out.println("\tDestino: " + dm.destinationAddresses[0]);
 		System.out.println("\tMeio transporte: " + meioTransporte);
-		System.out.println("\tValues:");
+		System.out.print("\tValues:");
 		for(DistanceMatrixRow row : dm.rows) {
 			for(DistanceMatrixElement el : row.elements) {
 				System.out.println("\t\t" + el.toString());

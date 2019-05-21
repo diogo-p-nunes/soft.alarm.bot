@@ -1,6 +1,7 @@
 package agent.qlearning;
 
 import agent.Evento;
+import agent.TimeConverter;
 
 public class State {
 	
@@ -40,5 +41,11 @@ public class State {
 					s.getTime_to_get_ready()[2] == this.getTime_to_get_ready()[2] &&
 					s.getEvento().equals(this.evento);
 		}
+	}
+
+	@Override
+	public String toString() {
+		String evento = "(" + TimeConverter.HMStoString(time_to_get_ready) + ")";
+		return evento;
 	}
 }

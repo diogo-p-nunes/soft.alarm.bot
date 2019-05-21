@@ -74,7 +74,8 @@ public class Agent {
 			return;
 		}
 		Row row = getRow(curr_state,0);
-		Row row_next = getRow(new_state, row.getFreshness()+1);
+		Row row_next = getRow(new_state, 0);
+		row_next.setFreshness(row.getFreshness()+1);
 		double melhor;
 		if (action == 1) {
 			melhor = max_action(row_next, row.getReduce_dress());
@@ -129,6 +130,8 @@ public class Agent {
 				row = q_table.get(s);
 			}
 		}
+
+
 		if (row == null) {
 			row = new Row(state, freshness);
 			q_table.put(state,row);
@@ -139,23 +142,33 @@ public class Agent {
 	private State executeAction(State curr_state, double random) {
 		Row row = getRow(curr_state,0);
 
-		System.out.println(EXPLORATION);
+		//System.out.println(EXPLORATION);
 		State new_state;
 		if (random < EXPLORATION) {
-			System.out.println("------------> Tine to explore!!!!!!!!!");
+			//System.out.println("------------> Time to explore!");
 			new_state = row.executeRandomAction();
 		}
 		else {
 			new_state = row.executeMaxAction();
 		}
 		action = row.getExecuted_action();
+
+		if(action == 1) {
+			//System.out.println("Action: Reduce dress.");
+		}
+		if(action == 2) {
+			//System.out.println("Action: Keep dress.");
+		}
+		if(action == 3) {
+			//System.out.println("Action: Increment dress.");
+		}
 		return new_state;
 	}
 
 	private int[] setAlarm (int[] start, int[] duration, int[] ready) {
 		int[] alarm = {0,0,0};
 
-		TimeConverter.printHMS("[DRESS]", ready);
+		TimeConverter.printHMS("[DRESS]   ", ready);
 
 		// set alarm seconds
 		int[] timeDependency = subtractTime(start[2], duration[2], 60);
@@ -205,5 +218,19 @@ public class Agent {
 		return res;
 	}
 
+	public void printQTable() {
+		System.out.println("\n===== Q-Table =====");
+		System.out.println(" State\t| Reduce\t| Keep\t| Increase\t| Freshness");
+		for(Row r : q_table.values()) {
+			if(curr_state.equals(r.getState())) {
+				System.out.print(r.toString());
+				System.out.println("\t\t<---------- current state");
+			}
+			else {
+				System.out.println(r.toString());
+			}
+			System.out.println("-------------------------------------------------");
+		}
+	}
 }
 

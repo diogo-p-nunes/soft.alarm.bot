@@ -14,7 +14,7 @@ public class TimeConverter {
         int mins = Integer.parseInt(firstEventStart.substring(14,16));
         int seconds = Integer.parseInt(firstEventStart.substring(17,19));
         int[] res = {hours, mins, seconds};
-        printHMS("[START]", res);
+        printHMS("[START]   ", res);
         return res;
     }
 
