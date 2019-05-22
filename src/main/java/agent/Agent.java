@@ -168,7 +168,7 @@ public class Agent {
 	private int[] setAlarm (int[] start, int[] duration, int[] ready) {
 		int[] alarm = {0,0,0};
 
-		TimeConverter.printHMS("[DRESS]   ", ready);
+		TimeConverter.printHMS("[READY]   ", ready);
 
 		// set alarm seconds
 		int[] timeDependency = subtractTime(start[2], duration[2], 60);
@@ -231,6 +231,15 @@ public class Agent {
 			}
 			System.out.println("-------------------------------------------------");
 		}
+	}
+
+
+	public void setMaxWakeUp(String maxWakeUp) {
+		user.setMaxWakeUp(maxWakeUp);
+	}
+
+	public void setDefaultReady(String ready) {
+		user.setTimeToDress(ready);
 	}
 }
 

@@ -37,11 +37,21 @@ public class UserInfo {
     	return this.feedback.getTimeToDress();
     }
 
+    public void setTimeToDress(String ready) {
+        this.feedback.setTimeToDress(ready);
+    }
+
     public String getMaxWakeUp() {
         return this.feedback.getMaxWakeUp();
+    }
+
+    public void setMaxWakeUp(String maxWakeUp) {
+        this.feedback.setMaxWakeUp(maxWakeUp);
     }
 
     private DateTime stringToDateTime(String dateString) {
         return new DateTime(dateString);
     }
+
+
 }
