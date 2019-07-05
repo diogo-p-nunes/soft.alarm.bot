@@ -15,7 +15,7 @@ public class Maps {
 
 	private String STORAGE_FILE = "pastEventsStorage.se";
 	private List<Evento> eventosPassados;
-	private static final String API_KEY = "AIzaSyDcOZV_h67RGwOFz3CN9hLIcdnYUgWc3EI";
+	private static final String API_KEY = "PLACE KEY HERE";
 	private static final GeoApiContext context = new GeoApiContext.Builder()
 			.apiKey(API_KEY)
 			.build();
