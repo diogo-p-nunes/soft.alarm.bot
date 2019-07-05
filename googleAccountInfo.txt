@@ -1,5 +1,0 @@
-email: dummyuseraasma@gmail.com
-passw: DummyUserAASMA2019
-data-nascimento: 29-10-1997
-primeiro e ultimo nome: dummy user
-API KEY (MAPS): AIzaSyDcOZV_h67RGwOFz3CN9hLIcdnYUgWc3EI
